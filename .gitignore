@@ -1,20 +1,7 @@
-# Python
 __pycache__/
-*.py[cod]
-*.so
-*.egg-info/
-build/
-dist/
-
-# Environments
-.venv/
 venv/
-.env/
-
-# Notebooks
-.ipynb_checkpoints/
-
-# Project outputs
+notebooks/
 *.csv
 *.png
 word-counts.json
+WikiScraper.pdf
