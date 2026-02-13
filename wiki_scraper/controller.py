@@ -24,6 +24,7 @@ from wiki_scraper.words import (
     save_word_counts,
     tokenize_words,
 )
+from wiki_scraper.relative_frequency import analyze_relative_word_frequency
 
 
 @dataclass(frozen=True)
@@ -141,6 +142,28 @@ class WikiController:
             sleep(wait_seconds)
 
         return processed
+
+    def analyze_relative_word_frequency(
+        self,
+        *,
+        mode: str,
+        count: int,
+        language_code: str,
+        chart_path: str | None,
+        word_counts_path: str = "word-counts.json",
+    ) -> pd.DataFrame:
+        word_counts = load_word_counts(word_counts_path)
+        if not word_counts:
+            raise ValueError(
+                f"No word counts found in {word_counts_path}. Run --count-words first."
+            )
+        return analyze_relative_word_frequency(
+            word_counts,
+            language_code=language_code,
+            mode=mode,
+            count=count,
+            chart_path=chart_path,
+        )
 
     def _update_word_counts(self, text: str, *, json_path: str) -> int:
         words = tokenize_words(text)

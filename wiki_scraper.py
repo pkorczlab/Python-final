@@ -26,6 +26,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Crawl wiki links starting from a phrase and update ./word-counts.json.",
     )
     parser.add_argument(
+        "--analyze-relative-word-frequency",
+        action="store_true",
+        help="Compare collected word counts with language word frequencies.",
+    )
+    parser.add_argument(
         "--table",
         metavar="PHRASE",
         help="Extract N-th <table> from the article and save it to CSV.",
@@ -51,6 +56,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Seconds to wait between requests (used with --auto-count-words).",
     )
     parser.add_argument(
+        "--mode",
+        choices=["article", "language"],
+        help="Sorting mode (used with --analyze-relative-word-frequency).",
+    )
+    parser.add_argument(
+        "--count",
+        type=int,
+        help="Number of rows (used with --analyze-relative-word-frequency).",
+    )
+    parser.add_argument(
+        "--chart",
+        help="Path to save bar chart PNG (used with --analyze-relative-word-frequency).",
+    )
+    parser.add_argument(
+        "--language",
+        default="en",
+        help="Language code for word frequencies (default: en).",
+    )
+    parser.add_argument(
         "--base-url",
         default=DEFAULT_BASE_URL,
         help="Base URL of the selected wiki.",
@@ -70,7 +94,15 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
-    if not any([args.summary, args.table, args.count_words, args.auto_count_words]):
+    if not any(
+        [
+            args.summary,
+            args.table,
+            args.count_words,
+            args.auto_count_words,
+            args.analyze_relative_word_frequency,
+        ]
+    ):
         parser.print_help()
         raise SystemExit(2)
 
@@ -132,6 +164,26 @@ def main() -> None:
         except Exception as exc:  # noqa: BLE001 - CLI boundary
             raise SystemExit(str(exc)) from exc
         print(f"Processed {processed} pages and updated word-counts.json")
+        return
+
+    if args.analyze_relative_word_frequency:
+        if args.mode is None:
+            raise SystemExit("--mode is required with --analyze-relative-word-frequency")
+        if args.count is None:
+            raise SystemExit("--count is required with --analyze-relative-word-frequency")
+        try:
+            df = controller.analyze_relative_word_frequency(
+                mode=args.mode,
+                count=args.count,
+                language_code=args.language,
+                chart_path=args.chart,
+            )
+        except Exception as exc:  # noqa: BLE001 - CLI boundary
+            raise SystemExit(str(exc)) from exc
+        print(df)
+        if args.chart:
+            print()
+            print(f"Saved chart: {args.chart}")
         return
 
     raise SystemExit("No valid command provided")
