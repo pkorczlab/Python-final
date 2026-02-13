@@ -16,6 +16,21 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print the first paragraph summary for a phrase.",
     )
     parser.add_argument(
+        "--table",
+        metavar="PHRASE",
+        help="Extract N-th <table> from the article and save it to CSV.",
+    )
+    parser.add_argument(
+        "--number",
+        type=int,
+        help="Table number (1-based) used with --table.",
+    )
+    parser.add_argument(
+        "--first-row-is-header",
+        action="store_true",
+        help="Treat first row as column headers (used with --table).",
+    )
+    parser.add_argument(
         "--base-url",
         default=DEFAULT_BASE_URL,
         help="Base URL of the selected wiki.",
@@ -35,7 +50,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
-    if not any([args.summary]):  # Placeholder for future commands
+    if not any([args.summary, args.table]):  # Placeholder for future commands
         parser.print_help()
         raise SystemExit(2)
 
@@ -55,6 +70,24 @@ def main() -> None:
         except Exception as exc:  # noqa: BLE001 - CLI boundary
             raise SystemExit(str(exc)) from exc
         print(text)
+        return
+
+    if args.table:
+        if args.number is None:
+            raise SystemExit("--number is required with --table")
+        try:
+            df, counts, csv_name = controller.table(
+                args.table,
+                number=args.number,
+                first_row_is_header=args.first_row_is_header,
+            )
+        except Exception as exc:  # noqa: BLE001 - CLI boundary
+            raise SystemExit(str(exc)) from exc
+        print(df)
+        print()
+        print(counts)
+        print()
+        print(f"Saved CSV: {csv_name}")
         return
 
     raise SystemExit("No valid command provided")
