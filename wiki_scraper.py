@@ -16,6 +16,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print the first paragraph summary for a phrase.",
     )
     parser.add_argument(
+        "--count-words",
+        metavar="PHRASE",
+        help="Count words in the article and update ./word-counts.json.",
+    )
+    parser.add_argument(
+        "--auto-count-words",
+        metavar="PHRASE",
+        help="Crawl wiki links starting from a phrase and update ./word-counts.json.",
+    )
+    parser.add_argument(
         "--table",
         metavar="PHRASE",
         help="Extract N-th <table> from the article and save it to CSV.",
@@ -29,6 +39,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--first-row-is-header",
         action="store_true",
         help="Treat first row as column headers (used with --table).",
+    )
+    parser.add_argument(
+        "--depth",
+        type=int,
+        help="Crawl depth (used with --auto-count-words).",
+    )
+    parser.add_argument(
+        "--wait",
+        type=float,
+        help="Seconds to wait between requests (used with --auto-count-words).",
     )
     parser.add_argument(
         "--base-url",
@@ -50,7 +70,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
-    if not any([args.summary, args.table]):  # Placeholder for future commands
+    if not any([args.summary, args.table, args.count_words, args.auto_count_words]):
         parser.print_help()
         raise SystemExit(2)
 
@@ -72,6 +92,14 @@ def main() -> None:
         print(text)
         return
 
+    if args.count_words:
+        try:
+            total = controller.count_words(args.count_words)
+        except Exception as exc:  # noqa: BLE001 - CLI boundary
+            raise SystemExit(str(exc)) from exc
+        print(f"Counted {total} words and updated word-counts.json")
+        return
+
     if args.table:
         if args.number is None:
             raise SystemExit("--number is required with --table")
@@ -88,6 +116,22 @@ def main() -> None:
         print(counts)
         print()
         print(f"Saved CSV: {csv_name}")
+        return
+
+    if args.auto_count_words:
+        if args.depth is None:
+            raise SystemExit("--depth is required with --auto-count-words")
+        if args.wait is None:
+            raise SystemExit("--wait is required with --auto-count-words")
+        try:
+            processed = controller.auto_count_words(
+                args.auto_count_words,
+                depth=args.depth,
+                wait_seconds=args.wait,
+            )
+        except Exception as exc:  # noqa: BLE001 - CLI boundary
+            raise SystemExit(str(exc)) from exc
+        print(f"Processed {processed} pages and updated word-counts.json")
         return
 
     raise SystemExit("No valid command provided")
