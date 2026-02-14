@@ -6,6 +6,7 @@ from collections import deque
 from dataclasses import dataclass
 from time import sleep
 from typing import TYPE_CHECKING
+import sys
 
 from wiki_scraper import parser
 from wiki_scraper.config import ARTICLE_PATH_PREFIX, DEFAULT_BASE_URL
@@ -122,17 +123,22 @@ class WikiController:
             visited.add(key)
 
             print(phrase)
-            processed += 1
+            try:
+                scraper = Scraper(
+                    self.config.base_url,
+                    phrase,
+                    use_local_html_file_instead=self.config.use_local_html_file,
+                    local_html_path=self.config.local_html_path,
+                )
+                html = scraper.fetch_html()
+                soup = parser.parse_html(html)
+                root = parser.find_article_root(soup)
+            except Exception as exc:  # noqa: BLE001
+                print(str(exc), file=sys.stderr)
+                sleep(wait_seconds)
+                continue
 
-            scraper = Scraper(
-                self.config.base_url,
-                phrase,
-                use_local_html_file_instead=self.config.use_local_html_file,
-                local_html_path=self.config.local_html_path,
-            )
-            html = scraper.fetch_html()
-            soup = parser.parse_html(html)
-            root = parser.find_article_root(soup)
+            processed += 1
 
             if dist < depth:
                 for href in parser.extract_links(root):

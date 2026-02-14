@@ -1,5 +1,9 @@
 import unittest
 from collections import Counter
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from wiki_scraper.words import merge_word_counts, tokenize_words
 

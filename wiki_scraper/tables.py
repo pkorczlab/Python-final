@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from io import StringIO
 
 import pandas as pd
 from bs4 import Tag
@@ -27,12 +28,14 @@ def html_table_to_dataframe(table: Tag, *, first_row_is_header: bool) -> pd.Data
 
     # read_html returns a list; in our case the snippet should contain exactly one table.
     html = str(table)
+    html_io = StringIO(html)
 
     # Prefer treating first column as row headers (index), as required by the assignment.
     try:
-        frames = pd.read_html(html, header=header, index_col=0)
+        frames = pd.read_html(html_io, header=header, index_col=0)
     except ValueError:
-        frames = pd.read_html(html, header=header)
+        html_io.seek(0)
+        frames = pd.read_html(html_io, header=header)
 
     if not frames:
         raise ValueError("No tables could be parsed by pandas")
@@ -46,10 +49,13 @@ def html_table_to_dataframe(table: Tag, *, first_row_is_header: bool) -> pd.Data
 
 def compute_value_counts(df: pd.DataFrame) -> pd.DataFrame:
     # Count values in data cells only (headers are not part of df values; index is excluded).
-    series = df.stack(dropna=True)
-    series = series.astype(str).str.strip()
-    series = series[series != ""]
-    counts = series.value_counts().rename_axis("value").reset_index(name="count")
+    # Avoid pandas stack() API differences (it may return Series or DataFrame depending
+    # on version / column index shape). Flatten via numpy to get a plain 1D sequence.
+    values = pd.Series(df.to_numpy().ravel())
+    values = values.dropna()
+    values = values.astype(str).str.strip()
+    values = values[values != ""]
+    counts = values.value_counts().rename_axis("value").reset_index(name="count")
     return counts
 
 

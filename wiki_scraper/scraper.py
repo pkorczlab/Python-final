@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from time import sleep
 from typing import Optional
 
 import requests
@@ -22,6 +23,8 @@ class Scraper:
         use_local_html_file_instead: bool = False,
         local_html_path: Optional[str] = None,
         timeout_seconds: int = 15,
+        max_retries: int = 3,
+        retry_backoff_seconds: float = 1.0,
         session: Optional[requests.Session] = None,
     ) -> None:
         self.base_url = base_url
@@ -29,6 +32,8 @@ class Scraper:
         self.use_local_html_file_instead = use_local_html_file_instead
         self.local_html_path = local_html_path
         self.timeout_seconds = timeout_seconds
+        self.max_retries = max_retries
+        self.retry_backoff_seconds = retry_backoff_seconds
         self.session = session or requests.Session()
         self.session.headers.update(DEFAULT_HEADERS)
 
@@ -50,10 +55,29 @@ class Scraper:
         return path.read_text(encoding="utf-8")
 
     def _fetch_remote_html(self) -> str:
-        response = self.session.get(self.article_url, timeout=self.timeout_seconds)
-        if response.status_code != 200:
-            raise ValueError(
-                f"Failed to fetch article ({response.status_code}): {self.article_url}"
-            )
-        response.encoding = response.apparent_encoding
-        return response.text
+        last_status: int | None = None
+        last_exc: Exception | None = None
+
+        for attempt in range(self.max_retries + 1):
+            try:
+                response = self.session.get(self.article_url, timeout=self.timeout_seconds)
+                last_status = response.status_code
+            except Exception as exc:  # noqa: BLE001
+                last_exc = exc
+                last_status = None
+            else:
+                if response.status_code == 200:
+                    response.encoding = response.apparent_encoding
+                    return response.text
+
+                # Typical transient errors / rate limiting.
+                if response.status_code not in {429, 500, 502, 503, 504}:
+                    break
+
+            if attempt < self.max_retries:
+                sleep(self.retry_backoff_seconds * (2**attempt))
+
+        if last_exc is not None:
+            raise ValueError(f"Failed to fetch article: {self.article_url}") from last_exc
+
+        raise ValueError(f"Failed to fetch article ({last_status}): {self.article_url}")

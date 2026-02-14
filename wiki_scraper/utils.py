@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from urllib.parse import unquote
+from urllib.parse import quote, unquote
 
 
 def normalize_phrase(phrase: str) -> str:
@@ -14,7 +14,10 @@ def build_article_url(base_url: str, phrase: str, prefix: str) -> str:
     """Build article URL from base URL, prefix, and phrase."""
     base = base_url.rstrip("/")
     normalized = normalize_phrase(phrase)
-    return f"{base}{prefix}{normalized}"
+    # Encode page title safely for MediaWiki-style URLs.
+    # Example: "Team Rocket's arsenal" -> "Team_Rocket%27s_arsenal"
+    title = quote(normalized, safe="()_-.,")
+    return f"{base}{prefix}{title}"
 
 
 def phrase_to_csv_filename(phrase: str) -> str:
