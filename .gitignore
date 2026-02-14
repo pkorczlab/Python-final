@@ -1,6 +1,7 @@
 __pycache__/
 venv/
 .ipynb_checkpoints/
+data/
 *.csv
 *.png
 word-counts.json
