@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from collections import deque
+from dataclasses import dataclass
 from time import sleep
-
-import pandas as pd
+from typing import TYPE_CHECKING
 
 from wiki_scraper import parser
 from wiki_scraper.config import ARTICLE_PATH_PREFIX, DEFAULT_BASE_URL
 from wiki_scraper.scraper import Scraper
-from wiki_scraper.tables import extract_table_result, get_nth_table
 from wiki_scraper.utils import (
     href_to_phrase,
     is_wiki_article_href,
@@ -24,7 +22,9 @@ from wiki_scraper.words import (
     save_word_counts,
     tokenize_words,
 )
-from wiki_scraper.relative_frequency import analyze_relative_word_frequency
+
+if TYPE_CHECKING:  # pragma: no cover
+    import pandas as pd
 
 
 @dataclass(frozen=True)
@@ -60,7 +60,16 @@ class WikiController:
         *,
         number: int,
         first_row_is_header: bool,
-    ) -> tuple[pd.DataFrame, pd.DataFrame, str]:
+    ) -> tuple["pd.DataFrame", "pd.DataFrame", str]:
+        try:
+            import pandas as pd  # noqa: F401
+        except Exception as exc:  # noqa: BLE001
+            raise RuntimeError(
+                "pandas is required for --table. Install dependencies from requirements.txt"
+            ) from exc
+
+        from wiki_scraper.tables import extract_table_result, get_nth_table
+
         scraper = Scraper(
             self.config.base_url,
             phrase,
@@ -151,7 +160,17 @@ class WikiController:
         language_code: str,
         chart_path: str | None,
         word_counts_path: str = "word-counts.json",
-    ) -> pd.DataFrame:
+    ) -> "pd.DataFrame":
+        try:
+            import pandas as pd  # noqa: F401
+        except Exception as exc:  # noqa: BLE001
+            raise RuntimeError(
+                "pandas is required for --analyze-relative-word-frequency. "
+                "Install dependencies from requirements.txt"
+            ) from exc
+
+        from wiki_scraper.relative_frequency import analyze_relative_word_frequency
+
         word_counts = load_word_counts(word_counts_path)
         if not word_counts:
             raise ValueError(
