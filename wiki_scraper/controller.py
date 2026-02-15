@@ -108,10 +108,14 @@ class WikiController:
             raise ValueError("depth must be >= 0")
         if wait_seconds < 0:
             raise ValueError("wait must be >= 0")
+        if self.config.use_local_html_file and depth > 0:
+            raise ValueError("--auto-count-words with --use-local-html supports only --depth 0")
 
         visited: set[str] = set()
+        seen: set[str] = set()
         queue: deque[tuple[str, int]] = deque()
         queue.append((start_phrase, 0))
+        seen.add(normalize_phrase_for_visit(start_phrase))
 
         existing = load_word_counts(self._word_counts_path)
         processed = 0
@@ -146,9 +150,10 @@ class WikiController:
                         continue
                     next_phrase = href_to_phrase(href, prefix=ARTICLE_PATH_PREFIX)
                     next_key = normalize_phrase_for_visit(next_phrase)
-                    if next_key in visited:
+                    if next_key in seen:
                         continue
                     queue.append((next_phrase, dist + 1))
+                    seen.add(next_key)
 
             text = parser.extract_all_text(root)
             existing, _ = self._update_word_counts_with_existing(existing, text)
