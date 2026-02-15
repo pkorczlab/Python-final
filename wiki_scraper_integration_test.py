@@ -1,5 +1,5 @@
-"""Integration test runner.
-
+"""
+Integration test runner.
 Runs a single feature using a local HTML file. Exits with non-zero code on failure.
 """
 

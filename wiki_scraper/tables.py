@@ -26,11 +26,9 @@ def get_nth_table(tables: list[Tag], number: int) -> Tag:
 def html_table_to_dataframe(table: Tag, *, first_row_is_header: bool) -> pd.DataFrame:
     header = 0 if first_row_is_header else None
 
-    # read_html returns a list; in our case the snippet should contain exactly one table.
     html = str(table)
     html_io = StringIO(html)
 
-    # Prefer treating first column as row headers (index), as required by the assignment.
     try:
         frames = pd.read_html(html_io, header=header, index_col=0)
     except ValueError:
@@ -41,16 +39,11 @@ def html_table_to_dataframe(table: Tag, *, first_row_is_header: bool) -> pd.Data
         raise ValueError("No tables could be parsed by pandas")
 
     df = frames[0]
-
-    # Drop fully empty rows/columns that sometimes appear after parsing.
     df = df.dropna(axis=0, how="all").dropna(axis=1, how="all")
     return df
 
 
 def compute_value_counts(df: pd.DataFrame) -> pd.DataFrame:
-    # Count values in data cells only (headers are not part of df values; index is excluded).
-    # Avoid pandas stack() API differences (it may return Series or DataFrame depending
-    # on version / column index shape). Flatten via numpy to get a plain 1D sequence.
     values = pd.Series(df.to_numpy().ravel())
     values = values.dropna()
     values = values.astype(str).str.strip()

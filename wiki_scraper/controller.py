@@ -24,7 +24,7 @@ from wiki_scraper.words import (
     tokenize_words,
 )
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     import pandas as pd
 
 

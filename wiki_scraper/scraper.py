@@ -70,7 +70,6 @@ class Scraper:
                     response.encoding = response.apparent_encoding
                     return response.text
 
-                # Typical transient errors / rate limiting.
                 if response.status_code not in {429, 500, 502, 503, 504}:
                     break
 

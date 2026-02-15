@@ -14,8 +14,6 @@ def build_article_url(base_url: str, phrase: str, prefix: str) -> str:
     """Build article URL from base URL, prefix, and phrase."""
     base = base_url.rstrip("/")
     normalized = normalize_phrase(phrase)
-    # Encode page title safely for MediaWiki-style URLs.
-    # Example: "Team Rocket's arsenal" -> "Team_Rocket%27s_arsenal"
     title = quote(normalized, safe="()_-.,")
     return f"{base}{prefix}{title}"
 
@@ -30,7 +28,6 @@ def is_wiki_article_href(href: str, *, prefix: str) -> bool:
     if href.startswith("//") or href.startswith("http://") or href.startswith("https://"):
         return False
     if ":" in href[len(prefix) :].split("#", 1)[0]:
-        # Skip special namespaces like File:, Category:, Help:, etc.
         return False
     return True
 

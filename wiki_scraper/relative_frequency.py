@@ -19,7 +19,6 @@ class RelativeFrequencyConfig:
 
 
 def _load_wordfreq():
-    # Import lazily to keep module importable without optional deps installed.
     try:
         from wordfreq import top_n_list, word_frequency
     except Exception as exc:
@@ -77,7 +76,6 @@ def analyze_relative_word_frequency(
 
     article_freq = [float(word_counts.get(w)) if w in word_counts else None for w in words]
 
-    # As required: show gaps for words not present in the language list.
     language_freq = [lang_freq_map.get(w) for w in words]
 
     article_norm = _normalize(article_freq)
