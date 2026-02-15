@@ -22,7 +22,7 @@ def _load_wordfreq():
     # Import lazily to keep module importable without optional deps installed.
     try:
         from wordfreq import top_n_list, word_frequency
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         raise RuntimeError(
             "wordfreq is required for --analyze-relative-word-frequency. "
             "Install dependencies from requirements.txt"
@@ -104,7 +104,7 @@ def _save_chart(df: pd.DataFrame, chart_path: str, *, mode: str, language_code: 
 
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         raise RuntimeError(
             "matplotlib is required for --chart. Install dependencies from requirements.txt"
         ) from exc

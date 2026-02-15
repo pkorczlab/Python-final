@@ -7,8 +7,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from wiki_scraper import parser
 
 try:
-    import pandas as _pandas  # noqa: F401
-except Exception:  # noqa: BLE001
+    import pandas as _pandas  # unused, only for skip condition
+except Exception:
     _pandas = None
 
 

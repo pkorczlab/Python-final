@@ -62,7 +62,7 @@ class Scraper:
             try:
                 response = self.session.get(self.article_url, timeout=self.timeout_seconds)
                 last_status = response.status_code
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 last_exc = exc
                 last_status = None
             else:

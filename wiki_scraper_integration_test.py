@@ -26,6 +26,6 @@ def main() -> int:
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         print(str(exc), file=sys.stderr)
         raise SystemExit(1)

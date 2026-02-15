@@ -13,7 +13,7 @@ try:
     import regex as _re
 
     _WORD_RE = _re.compile(r"[\p{L}\p{M}]+(?:[’'][\p{L}\p{M}]+)?")
-except Exception:  # noqa: BLE001
+except Exception:
     # Fallback to stdlib re: match Unicode letters but exclude digits/underscore.
     import re as _re
 

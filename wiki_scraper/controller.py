@@ -63,8 +63,8 @@ class WikiController:
         first_row_is_header: bool,
     ) -> tuple["pd.DataFrame", "pd.DataFrame", str]:
         try:
-            import pandas as pd  # noqa: F401
-        except Exception as exc:  # noqa: BLE001
+            import pandas as pd  # unused, only for dependency check
+        except Exception as exc:
             raise RuntimeError(
                 "pandas is required for --table. Install dependencies from requirements.txt"
             ) from exc
@@ -133,7 +133,7 @@ class WikiController:
                 html = scraper.fetch_html()
                 soup = parser.parse_html(html)
                 root = parser.find_article_root(soup)
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 print(str(exc), file=sys.stderr)
                 sleep(wait_seconds)
                 continue
@@ -168,8 +168,8 @@ class WikiController:
         word_counts_path: str = "word-counts.json",
     ) -> "pd.DataFrame":
         try:
-            import pandas as pd  # noqa: F401
-        except Exception as exc:  # noqa: BLE001
+            import pandas as pd  # unused, only for dependency check
+        except Exception as exc:
             raise RuntimeError(
                 "pandas is required for --analyze-relative-word-frequency. "
                 "Install dependencies from requirements.txt"

@@ -119,7 +119,7 @@ def main() -> None:
     if args.summary:
         try:
             text = controller.summary(args.summary)
-        except Exception as exc:  # noqa: BLE001 - CLI boundary
+        except Exception as exc:
             raise SystemExit(str(exc)) from exc
         print(text)
         return
@@ -127,7 +127,7 @@ def main() -> None:
     if args.count_words:
         try:
             total = controller.count_words(args.count_words)
-        except Exception as exc:  # noqa: BLE001 - CLI boundary
+        except Exception as exc:
             raise SystemExit(str(exc)) from exc
         print(f"Counted {total} words and updated word-counts.json")
         return
@@ -141,7 +141,7 @@ def main() -> None:
                 number=args.number,
                 first_row_is_header=args.first_row_is_header,
             )
-        except Exception as exc:  # noqa: BLE001 - CLI boundary
+        except Exception as exc:
             raise SystemExit(str(exc)) from exc
         print(df)
         print()
@@ -161,7 +161,7 @@ def main() -> None:
                 depth=args.depth,
                 wait_seconds=args.wait,
             )
-        except Exception as exc:  # noqa: BLE001 - CLI boundary
+        except Exception as exc:
             raise SystemExit(str(exc)) from exc
         print(f"Processed {processed} pages and updated word-counts.json")
         return
@@ -178,7 +178,7 @@ def main() -> None:
                 language_code=args.language,
                 chart_path=args.chart,
             )
-        except Exception as exc:  # noqa: BLE001 - CLI boundary
+        except Exception as exc:
             raise SystemExit(str(exc)) from exc
         print(df)
         if args.chart:
