@@ -3,22 +3,30 @@
 from __future__ import annotations
 
 import json
-import re
 from collections import Counter
 from pathlib import Path
 from typing import Iterable
 
 
-_WORD_RE = re.compile(r"[A-Za-z]+(?:'[A-Za-z]+)?")
+try:
+    # Third-party `regex` supports Unicode properties like \p{L}.
+    import regex as _re
+
+    _WORD_RE = _re.compile(r"[\p{L}\p{M}]+(?:[’'][\p{L}\p{M}]+)?")
+except Exception:  # noqa: BLE001
+    # Fallback to stdlib re: match Unicode letters but exclude digits/underscore.
+    import re as _re
+
+    _WORD_RE = _re.compile(r"[^\W\d_]+(?:[’'][^\W\d_]+)?")
 
 
 def tokenize_words(text: str) -> list[str]:
     """Tokenize text into (lowercased) words.
 
-    Assumes Latin alphabet, as required by the assignment examples.
+    Supports Latin letters with diacritics (e.g. pl/es/fr) and internal apostrophes.
     """
 
-    return [m.group(0).lower() for m in _WORD_RE.finditer(text)]
+    return [m.group(0).casefold() for m in _WORD_RE.finditer(text)]
 
 
 def count_words(words: Iterable[str]) -> Counter[str]:

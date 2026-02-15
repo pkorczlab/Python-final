@@ -13,6 +13,13 @@ class TestWords(unittest.TestCase):
         text = "Hello, world! It's Team Rocket."
         self.assertEqual(tokenize_words(text), ["hello", "world", "it's", "team", "rocket"])
 
+    def test_tokenize_words_unicode_diacritics(self) -> None:
+        text = "Pokémon są świetni. Español: niño, corazón."
+        self.assertEqual(
+            tokenize_words(text),
+            ["pokémon", "są", "świetni", "español", "niño", "corazón"],
+        )
+
     def test_merge_word_counts_accumulates(self) -> None:
         existing = {"team": 2, "rocket": 1}
         new = Counter({"team": 3, "rocket": 2, "hello": 1})
